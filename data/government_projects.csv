@@ -1,0 +1,5 @@
+project_id,district_id,category,status,source
+gp_bengaluru-urban_water_01,bengaluru-urban,water,active,PMGSY district report 2024
+gp_mysuru_healthcare_01,mysuru,healthcare,planned,State health dept 2025
+gp_chennai_roads_01,chennai,roads,active,TN highways dept 2023
+gp_coimbatore_education_01,coimbatore,education,planned,TN education dept 2024
