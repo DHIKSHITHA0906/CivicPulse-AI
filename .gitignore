@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Node / React
+node_modules/
+dist/
+build/
+
+# Secrets
+*.key
+*.pem
+service-account*.json
+firebase-adminsdk*.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
