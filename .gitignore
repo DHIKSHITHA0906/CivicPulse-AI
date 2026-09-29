@@ -23,3 +23,5 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+# Firebase service account
+backend/*firebase-adminsdk*.json
