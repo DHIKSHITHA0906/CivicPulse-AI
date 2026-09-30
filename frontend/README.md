@@ -1,116 +1,183 @@
-# CivicPulse AI — Frontend (Member 4)
+# CivicPulse AI — Frontend
 
-React + Leaflet/OpenStreetMap frontend, built exactly against the team's
-**Master Interface Reference** (function names, field names, and API shapes
-below are not open to reinterpretation — a mismatch there is the integration
-bug to fix, not something to work around here).
+CivicPulse is an AI-powered civic intelligence platform designed to support citizen issue reporting, request classification, prioritization, and visualization.
 
-## Structure
+This repository contains the frontend application for the CivicPulse platform. It provides separate interfaces for citizen issue submission and policymaker-oriented civic monitoring.
 
-```
-frontend/src/api.js                    # The one file that talks to the backend
-frontend/src/constants.js              # Mirrors shared/constants.py
-frontend/src/pages/Submit.jsx          # Citizen submission page
-frontend/src/pages/Dashboard.jsx       # Policymaker dashboard
-frontend/src/components/Map.jsx        # Leaflet + OSM, markers colored/sized by severity
-frontend/src/components/PriorityPanel.jsx  # Renders the merged /api/priority shape directly
-```
+## Overview
 
-`ConfidenceGauge.jsx`, `SeverityDonut.jsx`, `SeverityMeter.jsx`, `RequestsTable.jsx`,
-`RequestDetailModal.jsx`, `Modal.jsx`, `Skeleton.jsx`, `StatRow.jsx`,
-`LiveWaveform.jsx`, `AudioPlayer.jsx`, `labels.js`, and
-`SyntheticBanner.jsx` are presentation-only helpers, not part of the
-contract surface — they all render fields already returned by `api.js`,
-nothing invented.
+The CivicPulse frontend provides:
 
-## What's on each screen
+- Citizen issue reporting
+- Text and voice-based issue submission
+- Multilingual issue reporting
+- AI classification result display
+- Severity and confidence visualization
+- Interactive civic issue mapping
+- District and category filtering
+- Request monitoring
+- Priority visualization
+- Civic analytics
+- Request detail views
+- Loading, empty, cached-data, and error states
+- Responsive user interface
 
-**Submit** — 4-language switcher, text or voice input (with a live
-recording timer/waveform), geolocation with a district-dropdown fallback,
-distinct error states for a denied microphone vs. a failed submission, and
-a full result view including the `needs_review` flag.
+The frontend communicates with the existing backend through the defined API contracts. The frontend does not modify or reinterpret the backend response structure.
 
-**Dashboard** — district/category filters, a 5-card KPI row (open requests,
-avg. confidence, demand hotspots, top priority, needs-review count), a
-Leaflet map with severity-colored/sized markers and click-to-open request
-detail, a severity-distribution donut chart, a recent-requests table, and
-the ranked priority list with an inline explanation/recommendation panel.
-Every screen has a loading-skeleton state, an empty state (no results for
-the current filters), and a cached/error banner (Section 7).
+## Main Interfaces
 
-## Run locally
+### Report an Issue
 
-```bash
-npm install
-npm run dev
-```
+The citizen-facing submission interface allows users to:
 
-Runs entirely on mocked data matching the exact response shapes below — no
-backend required yet.
+- Enter a civic issue using text
+- Submit a voice recording
+- Record audio with a live waveform
+- Use browser geolocation when available
+- Select a district as a fallback
+- Submit the request to the backend
+- View the resulting request classification
+- View severity and confidence information
+- View whether the request requires manual review
+- View the generated request reference ID
 
-## Switch to the live backend
+### Multilingual Issue Reporting
 
-Copy `.env.example` to `.env`, set `VITE_USE_MOCKS=false` and
-`VITE_BACKEND_BASE_URL` to Member 3's deployed base URL. No component code
-changes — every component already reads the exact field names the real API
-returns.
+The Report an Issue interface currently supports four languages:
 
-## API contract (Master Reference Section 5.2 / 6.1)
+- English
+- Tamil
+- Hindi
+- Kannada
 
-| Function (`api.js`) | Endpoint | Returns |
-|---|---|---|
-| `submitRequest({ text, audio_base64, language_hint })` | `POST /api/submit-request` | full `CitizenRequest` |
-| `getRequests({ district_id, category })` | `GET /api/requests` | `{ requests: [...] }` |
-| `getPriority(district_id)` | `GET /api/priority/{district_id}` | `{ priorities: [...] }` — **PriorityScore + Recommendation already merged per category** |
-| `getRecommendations({ district_id })` | `GET /api/recommendations` | `{ recommendations: [...] }` |
+Multilingual support is currently implemented for the issue reporting interface rather than the entire dashboard.
 
-Field names are never renamed client-side: `district_id`, `latitude`,
-`longitude`, `severity` (int 1–5), `affected_population` (nullable),
-`confidence`, `is_synthetic`, `needs_review`, `priority_score` (0.0–1.0),
-`explanation_text`, `recommendation_type`, `reason_text` all flow straight
-from the API response into the components that render them.
+The language selection is handled at the frontend level while preserving the existing backend API structure.
 
-## Categories & recommendation types (`constants.js`, mirrors `shared/constants.py`)
+### Policymaker Dashboard
 
-- `CATEGORIES`: water, healthcare, education, roads, sanitation, other
-- `RECOMMENDATION_TYPES`: NEW_INTERVENTION, ACCELERATE, REVIEW_EXPAND, MONITOR, CONSIDER_REDIRECT, NO_ACTION_FLAGGED
+The dashboard provides a consolidated view of civic requests and priorities.
 
-If either list changes in `shared/constants.py`, update `constants.js` in the
-same commit.
+It includes:
 
-## Error handling
+- District selection
+- Category filtering
+- Open request count
+- Average confidence
+- Demand hotspot count
+- Top priority
+- Requests requiring review
+- Interactive civic map
+- Severity distribution
+- Recent requests
+- Request details
+- Priority information
+- Recommendations and explanations
 
-- Missing/undetected location → district dropdown fallback on Submit (note:
-  this is a UI affordance only — `extract_request()` infers `district` from
-  the submitted text itself, so there's currently no request parameter to
-  pass a user-picked district through; the dropdown is ready for that once
-  the contract adds one).
-- Any dashboard API failure → last successful response served from
-  `localStorage` instead of a blank screen, with a visible notice.
-- `needs_review: true` on a submission surfaces a plain-language notice
-  ("flagged for manual review") rather than a raw confidence number.
+## Interactive Map
 
-## Deploy (Firebase Hosting)
+The dashboard uses Leaflet and OpenStreetMap for geographic visualization.
 
-```bash
-npm run build
-firebase deploy --only hosting
-```
+The map displays civic requests using markers whose appearance is based on issue severity.
 
-## Visual system
+Users can:
 
-Dark cinematic palette defined as tokens at the top of `src/index.css`:
-charcoal/black ground, graphite surfaces, ivory ink, copper as the single
-interactive accent, sage for calm signals, and a brick → amber → straw → sage
-severity ramp. The severity colors also live in `components/mapSeverity.js`
-(used by the map, donut and marker cards) — change both together.
-Type: Newsreader (headlines, figures) + Hanken Grotesk (UI), with Noto Sans
-fallbacks for Tamil, Kannada and Devanagari.
+- View reported issue locations
+- Identify severity through marker styling
+- Select requests from the map
+- Open request details
+- Filter displayed requests using dashboard filters
 
-## Voice recorder (Submit)
+## Dashboard Analytics
 
-Recording still uses `MediaRecorder`, and the submitted payload is still the
-same `audio_base64` passed to `submitRequest()` in `api.js`. The live waveform
-reads the mic stream through a Web Audio `AnalyserNode` for display only, the
-player plays the local object URL, and recordings stop automatically at 2
-minutes (`MAX_RECORD_SECONDS` in `Submit.jsx`).
+The dashboard calculates and displays several indicators from the available request data.
+
+These include:
+
+- Number of open requests
+- Average classification confidence
+- Demand hotspots
+- Highest-priority category
+- Number of requests requiring review
+- Estimated affected population
+- Most reported category
+- Latest reported issue
+
+## Priority Information
+
+The dashboard displays the priority information returned by the backend.
+
+Priority data includes information such as:
+
+- Priority score
+- Recommendation type
+- Explanation
+- Category
+
+The frontend renders the values provided by the backend without changing the API field structure.
+
+## Technology Stack
+
+### Frontend
+
+- React
+- Vite
+- JavaScript
+- CSS
+
+### Mapping
+
+- Leaflet
+- OpenStreetMap
+
+### Icons
+
+- Lucide React
+
+### Deployment
+
+- Firebase Hosting
+
+## Project Structure
+
+```text
+frontend/
+|
++-- src/
+|   |
+|   +-- components/
+|   |   +-- AudioPlayer.jsx
+|   |   +-- ConfidenceGauge.jsx
+|   |   +-- LiveWaveform.jsx
+|   |   +-- Map.jsx
+|   |   +-- Map3D.jsx
+|   |   +-- Modal.jsx
+|   |   +-- PriorityPanel.jsx
+|   |   +-- RequestDetailModal.jsx
+|   |   +-- RequestsTable.jsx
+|   |   +-- SeverityDonut.jsx
+|   |   +-- SeverityMeter.jsx
+|   |   +-- Skeleton.jsx
+|   |   +-- StatRow.jsx
+|   |   +-- SyntheticBanner.jsx
+|   |   +-- labels.js
+|   |   +-- mapSeverity.js
+|   |
+|   +-- i18n/
+|   |   +-- strings.js
+|   |
+|   +-- pages/
+|   |   +-- Dashboard.jsx
+|   |   +-- Submit.jsx
+|   |
+|   +-- api.js
+|   +-- constants.js
+|   +-- App.jsx
+|   +-- index.css
+|   +-- main.jsx
+|
++-- firebase.json
++-- .firebaserc
++-- .env.example
++-- package.json
++-- vite.config.js
