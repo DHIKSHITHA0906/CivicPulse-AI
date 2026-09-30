@@ -217,11 +217,11 @@ def submit_request(payload: SubmitRequest):
     # ----------------------------------------------
 
     latitude = payload.latitude
-longitude = payload.longitude
+    longitude = payload.longitude
 
-if latitude is None or longitude is None:
-    if district_id in DISTRICT_COORDINATES:
-        latitude, longitude = DISTRICT_COORDINATES[district_id]
+    if latitude is None or longitude is None:
+        if district_id in DISTRICT_COORDINATES:
+            latitude, longitude = DISTRICT_COORDINATES[district_id]
 
     # ----------------------------------------------
     # 4. Create request ID
