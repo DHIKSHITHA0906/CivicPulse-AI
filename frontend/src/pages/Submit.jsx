@@ -40,7 +40,8 @@ export default function Submit() {
   const [recordedDuration, setRecordedDuration] = useState(0);
   const [analyser, setAnalyser] = useState(null);
   const [locationKnown, setLocationKnown] = useState(false);
-  const [district, setDistrict] = useState("");
+const [district, setDistrict] = useState("");
+const [locationCoords, setLocationCoords] = useState(null);
   const [status, setStatus] = useState(STATUS.IDLE);
   const [errorKind, setErrorKind] = useState(ERROR_KIND.SUBMIT);
   const [result, setResult] = useState(null);
@@ -62,10 +63,23 @@ export default function Submit() {
   useEffect(() => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
-      () => setLocationKnown(true),
-      () => setLocationKnown(false),
-      { timeout: 4000 }
-    );
+  (position) => {
+    setLocationKnown(true);
+    setLocationCoords({
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    });
+  },
+  () => {
+    setLocationKnown(false);
+    setLocationCoords(null);
+  },
+  {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 300000,
+  }
+);
   }, []);
 
   function releaseAudioUrl() {
@@ -207,10 +221,13 @@ export default function Submit() {
     e.preventDefault();
     setStatus(STATUS.SUBMITTING);
     const { data, error } = await submitRequest({
-      text: text || undefined,
-      audio_base64: audioBase64 || undefined,
-      language_hint: lang,
-    });
+  text: text || undefined,
+  audio_base64: audioBase64 || undefined,
+  language_hint: lang,
+  district_id: district || undefined,
+  latitude: locationCoords?.latitude,
+  longitude: locationCoords?.longitude,
+});
     if (error || !data) {
       setErrorKind(ERROR_KIND.SUBMIT);
       setStatus(STATUS.ERROR);
@@ -227,6 +244,7 @@ export default function Submit() {
     setAudioBase64(null);
     setPeaks(null);
     setDistrict("");
+    setLocationCoords(null);
     setResult(null);
     setStatus(STATUS.IDLE);
   }

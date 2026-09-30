@@ -243,11 +243,36 @@ async function livePost(path, body) {
 // ---------------------------------------------------------------------------
 
 // POST /api/submit-request → returns the full CitizenRequest (Section 2.1 / 5.2).
-export async function submitRequest({ text, audio_base64, language_hint }) {
+export async function submitRequest({
+  text,
+  audio_base64,
+  language_hint,
+  district_id,
+  latitude,
+  longitude,
+}) {
   try {
     const data = USE_MOCKS
-      ? (await delay(MOCK_LATENCY_MS), mockCitizenRequest({ text, audio_base64, language_hint }))
-      : await livePost("/api/submit-request", { text, audio_base64, language_hint });
+      ? (
+          await delay(MOCK_LATENCY_MS),
+          mockCitizenRequest({
+            text,
+            audio_base64,
+            language_hint,
+            district_id,
+            latitude,
+            longitude,
+          })
+        )
+      : await livePost("/api/submit-request", {
+          text,
+          audio_base64,
+          language_hint,
+          district_id,
+          latitude,
+          longitude,
+        });
+
     return { data, error: null };
   } catch (err) {
     return { data: null, error: "unavailable", message: err.message };

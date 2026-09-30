@@ -73,6 +73,9 @@ class SubmitRequest(BaseModel):
     text: str | None = None
     audio_base64: str | None = None
     language_hint: str | None = None
+    district_id: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
 
 
 # --------------------------------------------------
@@ -203,9 +206,7 @@ def submit_request(payload: SubmitRequest):
     # 2. Normalize district/category
     # ----------------------------------------------
 
-    district_id = normalize_district(
-        extracted.get("location")
-    )
+    district_id = payload.district_id or normalize_district(extracted.get("location"))
 
     category = normalize_category(
         extracted.get("category")
@@ -215,9 +216,10 @@ def submit_request(payload: SubmitRequest):
     # 3. Get district-level coordinates
     # ----------------------------------------------
 
-    latitude = None
-    longitude = None
+    latitude = payload.latitude
+longitude = payload.longitude
 
+if latitude is None or longitude is None:
     if district_id in DISTRICT_COORDINATES:
         latitude, longitude = DISTRICT_COORDINATES[district_id]
 
